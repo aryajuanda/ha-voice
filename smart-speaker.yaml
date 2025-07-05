@@ -248,16 +248,12 @@ binary_sensor:
     pin:
       number: GPIO0
       inverted: true
+      ignore_strapping_warning: true
     on_press:
       - script.execute: control_leds
     on_release:
       - script.execute: control_leds
       # If a factory reset is requested, factory reset on release
-      - if:
-          condition:
-            lambda: return id(factory_reset_requested);
-          then:
-            - button.press: factory_reset_button
     on_multi_click:
       # Simple Click:
       #   - Abort "things" in order
@@ -1606,11 +1602,19 @@ voice_assistant:
   volume_multiplier: 1
   on_client_connected:
     - lambda: id(init_in_progress) = false;
+    - script.execute:
+        id: play_sound
+        priority: true
+        sound_file: !lambda return id(jack_connected_sound);
     - micro_wake_word.start:
     - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
     - script.execute: control_leds
   on_client_disconnected:
     - voice_assistant.stop:
+    - script.execute:
+        id: play_sound
+        priority: true
+        sound_file: !lambda return id(jack_disconnected_sound);
     - lambda: id(voice_assistant_phase) = ${voice_assist_not_ready_phase_id};
     - script.execute: control_leds
   on_error:
